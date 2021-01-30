@@ -6,3 +6,4 @@ yolo-coco/yolov3.weights
 *.pyc
 *.pyc
 *.avi
+*.swp
