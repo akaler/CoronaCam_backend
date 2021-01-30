@@ -11,20 +11,22 @@ import argparse
 import imutils
 import cv2
 import os
-
-
-def serialize_sets(obj):
-    if isinstance(obj, set):
-        return list(obj)
+# from app import violations
 
 app = Flask(__name__)
 CORS(app)
 
+violations = 1
 # # #
 # # # # ROUTES        
 # # # # # # # # #
-def gen():
-    args = {"input": "store.mp4", "output": "store_out.avi", "display": 1}
+def serialize_sets(obj):
+    if isinstance(obj, set):
+        return list(obj)
+
+def gen_social_distancing():
+    global violations
+    args = {"input": "pedestrians.mp4", "output": "pedestrians_out.avi", "display": 1}
     #args["input"] = "store.mp4"
     #args["output"] = "store_out.avi"
     #args["display"] = 1
@@ -53,21 +55,31 @@ def gen():
 
     # initialize the video stream and pointer to output video file
     print("[INFO] accessing video stream...")
-    vs = cv2.VideoCapture(args["input"] if args["input"] else 0)
+    vs = cv2.VideoCapture(args["input"] if args["input"] else 0) # sami
+    # vs = cv2.VideoCapture("test.mp4")
+    # vs.set(cv2.CV_CAP_PROP_FPS, 15)
+    vs.set(cv2.FONT_HERSHEY_SIMPLEX, 10)
     writer = None
-
     # loop over the frames from the video stream
+    counter = 1
     while True:
         # read the next frame from the file
+        counter = counter + 1
+        if(counter > 10000):
+            counter = 1
+            
         (grabbed, frame) = vs.read()
-         
+
+        if(counter % 20 != 0):
+            continue
         # if the frame was not grabbed, then we have reached the end
         # of the stream
         if not grabbed:
             break
 
         # resize the frame and then detect people (and only people) in it
-        frame = imutils.resize(frame, width=700)
+        frame = imutils.resize(frame, width=450)
+	    # frame = np.dstack([frame, frame, frame])
         results = detect_people(frame, net, ln,
             personIdx=LABELS.index("person"))
 
@@ -117,6 +129,7 @@ def gen():
 
         # draw the total number of social distancing violations on the
         # output frame
+        violations = violations + len(violate)
         text = "Social Distancing Violations: {}".format(len(violate))
         cv2.putText(frame, text, (10, frame.shape[0] - 25),
             cv2.FONT_HERSHEY_SIMPLEX, 0.85, (0, 0, 255), 3)
@@ -153,18 +166,18 @@ def gen():
         frame = cv2.imencode('.jpg', frame)[1].tobytes()
         yield(b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
         
-        
+def gen_mask():
 
 @app.route("/")
 def hello():
     return "Hello World!"
 
-@app.route("/getDoc", methods=['POST'])
-def getDoc():
+@app.route("/getViolations", methods=['GET'])
+def getViolations():
     # filee = request.files['file'] # get file from request body
     jsonData = []
     sentenceJSON = {
-        "id": "002",
+        "violations": violations,
     }
     sentenceJSON = json.dumps(sentenceJSON, default=serialize_sets)
     jsonData.append(sentenceJSON)
@@ -175,8 +188,12 @@ def getDoc():
 @app.route('/video_feed')
 def video_feed():
     """Video streaming route. Put this in the src attribute of an img tag."""
-    return Response(gen(),mimetype='multipart/x-mixed-replace; boundary=frame')
-    #return Response(gen(),mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen_social_distancing(),mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/video_mask')
+def video_mask():
+    """Video streaming route. Put this in the src attribute of an img tag."""
+    return Response(gen_mask(),mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 if __name__ == "__main__":
