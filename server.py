@@ -36,7 +36,7 @@ def getViolations():
         "data": jsonData,
     })
 
-@app.route('/video_feed')
+@app.route('/video_social_distance')
 def video_feed():
     """Video streaming route. Put this in the src attribute of an img tag."""
     return Response(gen_social_distancing(),mimetype='multipart/x-mixed-replace; boundary=frame')

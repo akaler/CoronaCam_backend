@@ -2,6 +2,7 @@ from random import randint
 from pyimagesearch import social_distancing_config as config
 from pyimagesearch.detection import detect_people
 from scipy.spatial import distance as dist
+import video_input_config as video_config
 import numpy as np
 import cv2
 import os
@@ -93,7 +94,7 @@ def gen_mask():
     # initialize the video stream and allow the camera sensor to warm up
     print("[INFO] starting video stream...")
     #vs = VideoStream(src=0).start()
-    vs = cv2.VideoCapture("entry_cam.mp4")
+    vs = cv2.VideoCapture(video_config.MASK_DETECT_INPUT)
     #time.sleep(2.0)
 
     # loop over the frames from the video stream

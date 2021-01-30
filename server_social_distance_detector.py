@@ -1,6 +1,7 @@
 import json
 from random import randint
 from pyimagesearch import social_distancing_config as config
+import video_input_config as video_config
 from pyimagesearch.detection import detect_people
 from scipy.spatial import distance as dist
 import numpy as np
@@ -13,7 +14,7 @@ violations = 1
 
 def gen_social_distancing():
     global violations
-    args = {"input": "store.mp4", "output": "store_out.avi", "display": 1}
+    args = {"input": video_config.SOCIAL_DISTANCE_INPUT, "output": video_config.SOCIAL_DISTANCE_OUTPUT, "display": 1}
     #args["input"] = "store.mp4"
     #args["output"] = "store_out.avi"
     #args["display"] = 1
@@ -43,7 +44,7 @@ def gen_social_distancing():
     # initialize the video stream and pointer to output video file
     print("[INFO] accessing video stream...")
     #vs = cv2.VideoCapture(args["input"] if args["input"] else 0) # sami
-    vs = cv2.VideoCapture("store.mp4")
+    vs = cv2.VideoCapture(args["input"])
     # vs.set(cv2.CV_CAP_PROP_FPS, 15)
     vs.set(cv2.FONT_HERSHEY_SIMPLEX, 10)
     writer = None
