@@ -2,3 +2,7 @@
 yolo-coco/coco.names
 yolo-coco/yolov3.cfg
 yolo-coco/yolov3.weights
+*.pyc
+*.pyc
+*.pyc
+*.avi
