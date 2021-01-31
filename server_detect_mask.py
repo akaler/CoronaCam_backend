@@ -13,10 +13,15 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 from imutils.video import VideoStream
 import time
-from server import current_violations_masks
-from server import average_violations_masks
+#from server import current_violations_masks
+#from server import average_violations_masks
+
+global current_violations_masks 
+global average_violations_masks 
 
 def detect_and_predict_mask(frame, faceNet, maskNet):
+
+    
     args = {"face": "face_detector", "model": "mask_detector.model", "confidence": 0.5}
 	# grab the dimensions of the frame and then construct a blob
 	# from it
@@ -80,7 +85,12 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
 
 def gen_mask():
     # construct the argument parser and parse the arguments
-    
+    global current_violations_masks 
+    global average_violations_masks 
+
+    current_violations_masks = 0
+    average_violations_masks = 0 
+
     args = {"face": "face_detector", "model": "mask_detector.model", "confidence": 0.5}
     # load our serialized face detector model from disk
     print("[INFO] loading face detector model...")
@@ -101,8 +111,11 @@ def gen_mask():
 
     # loop over the frames from the video stream
     counter = 0
+    total_violations = 0
     while True:
         counter = counter + 1
+        if counter > 1000:
+            counter = 1
         # grab the frame from the threaded video stream and resize it
         # to have a maximum width of 400 pixels
         (grabbed, frame) = vs.read()
@@ -117,7 +130,6 @@ def gen_mask():
         # locations
         counter_without_masks = 0
         for (box, pred) in zip(locs, preds):
-            counter_without_masks = counter_without_masks + 1
             # unpack the bounding box and predictions
             (startX, startY, endX, endY) = box
             (mask, withoutMask) = pred
@@ -139,8 +151,9 @@ def gen_mask():
             cv2.putText(frame, label, (startX, startY - 10),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
-        
+
         current_violations_masks = counter_without_masks
-        average_violations_masks += (average_violations + counter_without_masks)/float(counter)
+        total_violations += current_violations_masks
+        average_violations_masks = (total_violations)/float(counter)
         frame = cv2.imencode('.jpg', frame)[1].tobytes()
         yield(b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
