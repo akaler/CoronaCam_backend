@@ -13,6 +13,8 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 from imutils.video import VideoStream
 import time
+from server import current_violations_masks
+from server import average_violations_masks
 
 def detect_and_predict_mask(frame, faceNet, maskNet):
     args = {"face": "face_detector", "model": "mask_detector.model", "confidence": 0.5}
@@ -98,7 +100,9 @@ def gen_mask():
     #time.sleep(2.0)
 
     # loop over the frames from the video stream
+    counter = 0
     while True:
+        counter = counter + 1
         # grab the frame from the threaded video stream and resize it
         # to have a maximum width of 400 pixels
         (grabbed, frame) = vs.read()
@@ -111,7 +115,9 @@ def gen_mask():
 
         # loop over the detected face locations and their corresponding
         # locations
+        counter_without_masks = 0
         for (box, pred) in zip(locs, preds):
+            counter_without_masks = counter_without_masks + 1
             # unpack the bounding box and predictions
             (startX, startY, endX, endY) = box
             (mask, withoutMask) = pred
@@ -120,6 +126,10 @@ def gen_mask():
             # the bounding box and text
             label = "Mask" if mask > withoutMask else "No Mask"
             color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+
+            # mask statistics
+            if label != "Mask":
+                counter_without_masks += 1
 
             # include the probability in the label
             label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
@@ -130,5 +140,7 @@ def gen_mask():
                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
         
+        current_violations_masks = counter_without_masks
+        average_violations_masks += (average_violations + counter_without_masks)/float(counter)
         frame = cv2.imencode('.jpg', frame)[1].tobytes()
         yield(b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
