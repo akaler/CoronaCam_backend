@@ -7,6 +7,7 @@ import numpy as np
 import cv2
 import os
 #face-mask imports
+import analytics
 
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -16,8 +17,8 @@ import time
 #from server import current_violations_masks
 #from server import average_violations_masks
 
-global current_violations_masks 
-global average_violations_masks 
+#global current_violations_masks 
+#global average_violations_masks 
 
 def detect_and_predict_mask(frame, faceNet, maskNet):
 
@@ -84,76 +85,75 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
     return (locs, preds)
 
 def gen_mask():
-    # construct the argument parser and parse the arguments
-    global current_violations_masks 
-    global average_violations_masks 
+    while True: 
+        # construct the argument parser and parse the arguments
 
-    current_violations_masks = 0
-    average_violations_masks = 0 
+        analytics.current_violations_masks = 0
+        analytics.average_violations_masks = 0 
 
-    args = {"face": "face_detector", "model": "mask_detector.model", "confidence": 0.5}
-    # load our serialized face detector model from disk
-    print("[INFO] loading face detector model...")
-    prototxtPath = os.path.sep.join([args["face"], "deploy.prototxt"])
-    weightsPath = os.path.sep.join([args["face"],
-        "res10_300x300_ssd_iter_140000.caffemodel"])
-    faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
+        args = {"face": "face_detector", "model": "mask_detector.model", "confidence": 0.5}
+        # load our serialized face detector model from disk
+        print("[INFO] loading face detector model...")
+        prototxtPath = os.path.sep.join([args["face"], "deploy.prototxt"])
+        weightsPath = os.path.sep.join([args["face"],
+            "res10_300x300_ssd_iter_140000.caffemodel"])
+        faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
-    # load the face mask detector model from disk
-    print("[INFO] loading face mask detector model...")
-    maskNet = load_model(args["model"])
+        # load the face mask detector model from disk
+        print("[INFO] loading face mask detector model...")
+        maskNet = load_model(args["model"])
 
-    # initialize the video stream and allow the camera sensor to warm up
-    print("[INFO] starting video stream...")
-    #vs = VideoStream(src=0).start()
-    vs = cv2.VideoCapture(video_config.MASK_DETECT_INPUT)
-    #time.sleep(2.0)
+        # initialize the video stream and allow the camera sensor to warm up
+        print("[INFO] starting video stream...")
+        #vs = VideoStream(src=0).start()
+        vs = cv2.VideoCapture(video_config.MASK_DETECT_INPUT)
+        #time.sleep(2.0)
 
-    # loop over the frames from the video stream
-    counter = 0
-    total_violations = 0
-    while True:
-        counter = counter + 1
-        if counter > 1000:
-            counter = 1
-        # grab the frame from the threaded video stream and resize it
-        # to have a maximum width of 400 pixels
-        (grabbed, frame) = vs.read()
-        #frame = imutils.resize(frame, width=400)
-        if not grabbed:
-            break
-        # detect faces in the frame and determine if they are wearing a
-        # face mask or not
-        (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
+        # loop over the frames from the video stream
+        counter = 0
+        total_violations = 0
+        while True:
+            counter = counter + 1
+            if counter > 1000:
+                counter = 1
+            # grab the frame from the threaded video stream and resize it
+            # to have a maximum width of 400 pixels
+            (grabbed, frame) = vs.read()
+            #frame = imutils.resize(frame, width=400)
+            if not grabbed:
+                break
+            # detect faces in the frame and determine if they are wearing a
+            # face mask or not
+            (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
 
-        # loop over the detected face locations and their corresponding
-        # locations
-        counter_without_masks = 0
-        for (box, pred) in zip(locs, preds):
-            # unpack the bounding box and predictions
-            (startX, startY, endX, endY) = box
-            (mask, withoutMask) = pred
+            # loop over the detected face locations and their corresponding
+            # locations
+            counter_without_masks = 0
+            for (box, pred) in zip(locs, preds):
+                # unpack the bounding box and predictions
+                (startX, startY, endX, endY) = box
+                (mask, withoutMask) = pred
 
-            # determine the class label and color we'll use to draw
-            # the bounding box and text
-            label = "Mask" if mask > withoutMask else "No Mask"
-            color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+                # determine the class label and color we'll use to draw
+                # the bounding box and text
+                label = "Mask" if mask > withoutMask else "No Mask"
+                color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
 
-            # mask statistics
-            if label != "Mask":
-                counter_without_masks += 1
+                # mask statistics
+                if label != "Mask":
+                    counter_without_masks += 1
 
-            # include the probability in the label
-            label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
+                # include the probability in the label
+                label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
 
-            # display the label and bounding box rectangle on the output
-            # frame
-            cv2.putText(frame, label, (startX, startY - 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
-            cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
+                # display the label and bounding box rectangle on the output
+                # frame
+                cv2.putText(frame, label, (startX, startY - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+                cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
-        current_violations_masks = counter_without_masks
-        total_violations += current_violations_masks
-        average_violations_masks = (total_violations)/float(counter)
-        frame = cv2.imencode('.jpg', frame)[1].tobytes()
-        yield(b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            analytics.current_violations_masks = counter_without_masks
+            total_violations += analytics.current_violations_masks
+            analytics.average_violations_masks = (total_violations)/float(counter)
+            frame = cv2.imencode('.jpg', frame)[1].tobytes()
+            yield(b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
