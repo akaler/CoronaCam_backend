@@ -7,3 +7,5 @@ yolo-coco/yolov3.weights
 *.pyc
 *.avi
 *.swp
+blm.mp4
+face_mask_cart.mp4

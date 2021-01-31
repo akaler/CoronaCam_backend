@@ -39,14 +39,13 @@ def getViolations():
         "average_violations_sd": analytics.average_violations_sd,
         "current_violations_masks": analytics.current_violations_masks,
         "average_violations_masks": analytics.average_violations_masks,
-
     }
     sentenceJSON = json.dumps(sentenceJSON, default=serialize_sets)
     jsonData.append(sentenceJSON)
     print("getViolation is called")
 
     if twillio_test.text_sent_sd == True: 
-        if analytics.average_violations_sd < 9:
+        if analytics.current_violations_sd < 9:
             twillio_test.text_sent_sd = False
 
     if analytics.average_violations_sd >= 9 and twillio_test.text_sent_sd == False:
@@ -54,7 +53,7 @@ def getViolations():
         twillio_test.send_message(message, phone_number)
         twillio_test.text_sent_sd = True
 
-    if analytics.average_violations_masks >= 1:
+    if analytics.current_violations_masks >= 1:
         message = "Corona Cam warning: Number of mask violation is too high. Current average is: {}".format(server_detect_mask.average_violations_masks)
         twillio_test.send_message(message, phone_number) 
     return jsonify({

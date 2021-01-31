@@ -67,7 +67,6 @@ def gen_social_distancing(video_index):
             counter = counter + 1
             if(counter > 10000):
                 counter = 1
-                counter20 = 0
                 
             (grabbed, frame) = vs.read()
 
