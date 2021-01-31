@@ -9,11 +9,11 @@ import argparse
 import imutils
 import cv2
 import os
+from server import current_violations_sd
+from server import average_violations_sd
 
-violations = 1
 
 def gen_social_distancing():
-    global violations
     args = {"input": video_config.SOCIAL_DISTANCE_INPUT, "output": video_config.SOCIAL_DISTANCE_OUTPUT, "display": 1}
     #args["input"] = "store.mp4"
     #args["output"] = "store_out.avi"
@@ -49,7 +49,7 @@ def gen_social_distancing():
     vs.set(cv2.FONT_HERSHEY_SIMPLEX, 10)
     writer = None
     # loop over the frames from the video stream
-    counter = 1
+    counter = 0
     while True:
         # read the next frame from the file
         counter = counter + 1
@@ -117,7 +117,8 @@ def gen_social_distancing():
 
         # draw the total number of social distancing violations on the
         # output frame
-        violations = violations + len(violate)
+        current_violations_sd = len(violate)
+        average_violations_sd = (average_violations_sd + len(violate))/float(counter)
         text = "Social Distancing Violations: {}".format(len(violate))
         cv2.putText(frame, text, (10, frame.shape[0] - 25),
             cv2.FONT_HERSHEY_SIMPLEX, 0.85, (0, 0, 255), 3)

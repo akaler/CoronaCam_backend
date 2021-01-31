@@ -11,7 +11,10 @@ from server_detect_mask import gen_mask
 app = Flask(__name__)
 CORS(app)
 
-violations = 1
+current_violations_sd = 1
+average_violations_sd = 0
+current_violations_masks = 1
+average_violations_masks = 0
 # # #
 # # # # ROUTES        
 # # # # # # # # #
@@ -28,7 +31,10 @@ def getViolations():
     # filee = request.files['file'] # get file from request body
     jsonData = []
     sentenceJSON = {
-        "violations": violations,
+        "current_violations_sd": current_violations_sd,
+        "average_violations_sd": average_violations_sd,
+        "current_violations_masks": current_violations_masks,
+        "average_violations_masks": average_violations_masks
     }
     sentenceJSON = json.dumps(sentenceJSON, default=serialize_sets)
     jsonData.append(sentenceJSON)
