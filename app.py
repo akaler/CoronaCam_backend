@@ -49,12 +49,12 @@ def getViolations():
             twillio_test.text_sent_sd = False
 
     if analytics.average_violations_sd >= 9 and twillio_test.text_sent_sd == False:
-        message = "Corona Cam warning: Number of social distance violation is too high. Current average is: {}".format(server_social_distance_detector.average_violations_sd)
+        message = "Corona Cam warning: Number of social distance violation is too high. Current average is: {}".format(.analytics.average_violations_sd)
         twillio_test.send_message(message, phone_number)
         twillio_test.text_sent_sd = True
 
     if analytics.current_violations_masks >= 1:
-        message = "Corona Cam warning: Number of mask violation is too high. Current average is: {}".format(server_detect_mask.average_violations_masks)
+        message = "Corona Cam warning: Number of mask violation is too high. Current average is: {}".format(analytics.average_violations_masks)
         twillio_test.send_message(message, phone_number) 
     return jsonify({
         "data": jsonData,
