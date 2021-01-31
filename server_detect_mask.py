@@ -84,7 +84,7 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
     # locations 
     return (locs, preds)
 
-def gen_mask():
+def gen_mask(video_index):
     while True: 
         # construct the argument parser and parse the arguments
 
@@ -106,7 +106,7 @@ def gen_mask():
         # initialize the video stream and allow the camera sensor to warm up
         print("[INFO] starting video stream...")
         #vs = VideoStream(src=0).start()
-        vs = cv2.VideoCapture(video_config.MASK_DETECT_INPUT)
+        vs = cv2.VideoCapture(video_config.MASK_DETECT_INPUT[video_index])
         #time.sleep(2.0)
 
         # loop over the frames from the video stream

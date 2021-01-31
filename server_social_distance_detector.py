@@ -13,7 +13,7 @@ import analytics
 #current_violations_sd
 #average_violations_sd
 
-def gen_social_distancing():
+def gen_social_distancing(video_index):
     #global current_violations_sd   
     #global average_violations_sd  
     global violations_in_past 
@@ -24,7 +24,7 @@ def gen_social_distancing():
         violations_in_past = []
         #for i in violations_in_past:
         #    i = 0
-        args = {"input": video_config.SOCIAL_DISTANCE_INPUT, "output": video_config.SOCIAL_DISTANCE_OUTPUT, "display": 1}
+        args = {"input": video_config.SOCIAL_DISTANCE_INPUT[video_index], "output": video_config.SOCIAL_DISTANCE_OUTPUT, "display": 1}
         #args["input"] = "store.mp4"
         #args["output"] = "store_out.avi"
         #args["display"] = 1
@@ -71,8 +71,8 @@ def gen_social_distancing():
                 
             (grabbed, frame) = vs.read()
 
-            if(counter % 20 != 0):
-                continue
+            #if(counter % 5 != 0):
+            #    continue
             counter20 += 1
             # if the frame was not grabbed, then we have reached the end
             # of the stream

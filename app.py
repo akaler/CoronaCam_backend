@@ -60,16 +60,37 @@ def getViolations():
     return jsonify({
         "data": jsonData,
     })
-
-@app.route('/video_social_distance')
-def video_feed():
+@app.route('/video_sd1')
+def video_sd1():
     """Video streaming route. Put this in the src attribute of an img tag."""
-    return Response(server_social_distance_detector.gen_social_distancing(),mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(server_social_distance_detector.gen_social_distancing(0),mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/video_mask')
-def video_mask():
+@app.route('/video_sd2')
+def video_sd2():
     """Video streaming route. Put this in the src attribute of an img tag."""
-    return Response(server_detect_mask.gen_mask(),mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(server_social_distance_detector.gen_social_distancing(1),mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/video_sd3')
+def video_sd3():
+    """Video streaming route. Put this in the src attribute of an img tag."""
+    return Response(server_social_distance_detector.gen_social_distancing(2),mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/video_mask1')
+def video_mask1():
+    """Video streaming route. Put this in the src attribute of an img tag."""
+    return Response(server_detect_mask.gen_mask(0),mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/video_mask2')
+def video_mask2():
+    """Video streaming route. Put this in the src attribute of an img tag."""
+    return Response(server_detect_mask.gen_mask(1),mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/video_mask3')
+def video_mask3():
+    """Video streaming route. Put this in the src attribute of an img tag."""
+    return Response(server_detect_mask.gen_mask(2),mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
 
 @app.route("/savePhoneNumber", methods=['POST'])
 def savePhoneNumber():

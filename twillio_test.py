@@ -9,8 +9,8 @@ text_sent_sd = False
 #account_sid = os.environ['AC3f9cf700ee5479b844ca208a38252005']
 #auth_token = os.environ['fb3b26b83828e0477d261079cafc3562']
 def send_message(message,phone_number):
-    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+    account_sid = "AC3f9cf700ee5479b844ca208a38252005" #os.environ.get('TWILIO_ACCOUNT_SID')
+    auth_token = "c0d462e711b0bc282380102b20c5b886" #os.environ.get('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
 
     message = client.messages \
